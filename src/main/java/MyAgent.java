@@ -1,24 +1,36 @@
 import java.util.Random;
 /**
  * Describe your basic strategy here.
- * @author <your Github username>
+ * @author johnpalsberg
  *
  */
+
 public class MyAgent extends Agent {
   /**
    * A random number generator to randomly decide where to place a token.
    */
   private Random random;
+  private int x;
+  private Connect4Game ACopy;
+  private int i;
+  private int j;
+  private int k;
+  private int movingFirst;
+  private int b;
 
   /**
    * Constructs a new agent, giving it the game and telling it whether it is Red or Yellow.
    *
    * @param game The game the agent will be playing.
    * @param iAmRed True if the agent is Red, False if the agent is Yellow.
+   * 
    */
   public MyAgent(Connect4Game game, boolean iAmRed) {
     super(game, iAmRed);
     random = new Random();
+    ACopy = new Connect4Game(myGame);
+    k = 0;
+    movingFirst = 0;
   }
 
   /**
@@ -40,20 +52,68 @@ public class MyAgent extends Agent {
    * <p>If an invalid move is made, the game engine will announce it and the game will be ended.</p>
    *
    */
-  public void move() {
+  public void move() 
+    {
+    this.movingFirst();
+    boolean firstMoving = false;
+    int a = 0;
+    if ((movingFirst == 1 || movingFirst == 2 || movingFirst == 3) && a < 3) {
+      if ((movingFirst) == 1) {
+      this.moveOnColumn(5);
+      System.out.println("Blitzkrieg1");
+      movingFirst = 2;
+      a++;
+      }
+    if((movingFirst) == 2) {
+      this.moveOnColumn(6);
+      System.out.println("Blitzkrieg2");
+      movingFirst = 3;
+      a++;
+    }
+    if((movingFirst) == 3) {
+    this.moveOnColumn(4);
+    System.out.println("Blitzkrieg3");
+    movingFirst = 3;
+    a++;
+    }
+    }
+    else {
+      
+    
+  //Above this does a quick attack at the beginning
+   if (this.OpAttack() != -2) {
+
+      this.moveOnColumn(j);
+    }
+   else if (this.doubleICanWinCheck() != -1) {
+      System.out.println("DoubleICanWin"+this.doubleICanWinCheck());
+      this.moveOnColumn(doubleICanWinCheck());
+      
+    } else {
+      System.out.println("Moving randomly");
+
+      System.out.println("Random");
+      this.moveOnColumn(this.randomMove());
+    }
 
   }
+}
+
+
+    
 
   /**
    * Drops a token into a particular column so that it will fall to the bottom of the column.
    * If the column is already full, nothing will change.
-   *
+1   *
    * @param columnNumber The column into which to drop the token.
    */
+
   public void moveOnColumn(int columnNumber) {
     // Find the top empty slot in the column
     // If the column is full, lowestEmptySlot will be -1
     int lowestEmptySlotIndex = getLowestEmptyIndex(myGame.getColumn(columnNumber));
+    //System.out.println("Moving on column" + columnNumber);
     // if the column is not full
     if (lowestEmptySlotIndex > -1) {
       // get the slot in this column at this index
@@ -63,6 +123,44 @@ public class MyAgent extends Agent {
         lowestEmptySlot.addRed(); // Place a red token into the empty slot
       } else {
         lowestEmptySlot.addYellow(); // Place a yellow token into the empty slot
+      }
+    }
+  }
+
+  /**
+   * places the your color on the desired column and on the desired game
+   */
+  public void moveOnColumn(int columnNumber, Connect4Game game) {
+    // Find the top empty slot in the column
+    // If the column is full, lowestEmptySlot will be -1
+    int lowestEmptySlotIndex = getLowestEmptyIndex(game.getColumn(columnNumber));
+    // if the column is not full
+    if (lowestEmptySlotIndex > -1) {
+      // get the slot in this column at this index
+      Connect4Slot lowestEmptySlot = game.getColumn(columnNumber).getSlot(lowestEmptySlotIndex);
+      // If the current agent is the Red player...
+      if (iAmRed) {
+        lowestEmptySlot.addRed(); // Place a red token into the empty slot
+      } else {
+        lowestEmptySlot.addYellow(); // Place a yellow token into the empty slot
+      }
+    }
+  }
+  // places the opponent's disk 
+
+  public void moveOnOppColumn(int columnNumber, Connect4Game game) {
+    // Find the top empty slot in the column
+    // If the column is full, lowestEmptySlot will be -1
+    int lowestEmptySlotIndex = getLowestEmptyIndex(game.getColumn(columnNumber));
+    // if the column is not full
+    if (lowestEmptySlotIndex > -1) {
+      // get the slot in this column at this index
+      Connect4Slot lowestEmptySlot = game.getColumn(columnNumber).getSlot(lowestEmptySlotIndex);
+      // If the current agent is the Red player...
+      if (iAmRed) {
+        lowestEmptySlot.addYellow(); // Place a red token into the empty slot
+      } else {
+        lowestEmptySlot.addRed(); // Place a yellow token into the empty slot
       }
     }
   }
@@ -109,8 +207,48 @@ public class MyAgent extends Agent {
    * @return the column that would allow the agent to win.
    */
   public int iCanWin() {
-    return 0;
+
+    int x = -1;
+    while (x < 6) {
+      Connect4Game copy = new Connect4Game(myGame); //make a copy
+      x++;
+      if (getLowestEmptyIndex(copy.getColumn(x))!= -1) {
+        this.moveOnColumn(x, copy);     // place on that column
+      }
+      if (copy.gameWon() != 'N') {
+        System.out.println("Copy.gameWon" + copy.gameWon());
+        //check for a win
+        return x; 
+      }
+      // return the column
+    }                              //repeat
+    return -1;
   }
+
+  public int iCanWin(Connect4Game a) {
+    int c;
+    int x = -1;
+    while (x < 6) {
+      Connect4Game copy = new Connect4Game(a); //make a copy
+      x++;
+      if (getLowestEmptyIndex(copy.getColumn(x))!= -1) {
+        this.moveOnColumn(x, copy);     // place on that column
+      }
+      if (iAmRed == true) {
+        c = 'R';
+      } else {
+        c ='Y';
+      }
+      if (copy.gameWon() == c) {
+        System.out.println("Copy.gameWon" + copy.gameWon());
+        //check for a win
+        return x; 
+      }
+      // return the column
+    }                              //repeat
+    return -1;
+  }
+
 
   /**
    * Returns the column that would allow the opponent to win.
@@ -122,7 +260,35 @@ public class MyAgent extends Agent {
    * @return the column that would allow the opponent to win.
    */
   public int theyCanWin() {
-    return 0;
+    int x = -1;
+    while (x < 6) {
+      Connect4Game copy = new Connect4Game(myGame);
+      x++;
+      if (getLowestEmptyIndex(copy.getColumn(x)) != -1) {
+        this.moveOnOppColumn(x, copy);
+      }
+      if (copy.gameWon() != 'N') {
+        return x;
+      }
+    }
+    return -1;
+
+  }
+  // I move first
+  public int movingFirst() {
+    int x = -1;
+    while (x < 6) {
+      Connect4Game copy = new Connect4Game(myGame);
+      x++;
+      if (getLowestEmptyIndex(copy.getColumn(x)) != -1) {
+        this.moveOnOppColumn(x, copy);
+      }
+      if (getLowestEmptyIndex(copy.getColumn(x)) != 1) {
+        movingFirst = 1;
+      }
+    }
+    return -1;
+
   }
 
   /**
@@ -133,4 +299,147 @@ public class MyAgent extends Agent {
   public String getName() {
     return "My Agent";
   }
+  /* 
+  public int OPMove() {
+    int s = 1;
+    int i = random.nextInt(myGame.getColumnCount());
+    while (getLowestEmptyIndex(myGame.getColumn(i)) == -1 && s > 0) {
+      i = random.nextInt(myGame.getColumnCount());
+      if (i == x) {
+        s = 0;
+      }
+    }
+    x = i;
+    return i;
+  } 
+  /*
+   * checks to see whether an indicated 
+   * line caused a fork
+   */
+
+
+  private int doubleICanWin() {
+    int x = -1;
+    int y = -1;
+    while (x < 6) {
+      Connect4Game copyB = new Connect4Game(ACopy); //make a copy
+      x++;
+      if (getLowestEmptyIndex(copyB.getColumn(x)) != -1) { // if it isn't full
+        this.moveOnColumn(x, copyB);     // place on that column
+      }
+      if (copyB.gameWon() != 'N') {
+        Connect4Game copyA = new Connect4Game(myGame);                                                              //check for a win
+        this.moveOnOppColumn(x, copyA);
+        while (y < 6) {
+          y++;
+          this.moveOnColumn(y, copyA);
+          if (copyA.gameWon() !='N') 
+            return y;
+        }
+        // return the column
+      } 
+    }//repeat
+    return -1;
+  }
+
+  /*
+   * Check for forks
+   * 
+   */
+  public int doubleICanWinCheck() {
+    int x = -1;
+    while (x < 6) {
+      ACopy = new Connect4Game(myGame); 
+      x++;
+      if (getLowestEmptyIndex(ACopy.getColumn(x))!= -1) { // if the column isn't full 
+        this.moveOnColumn(x, ACopy);     // place on that column
+      }
+      if (doubleICanWin() != -1) {
+        //check for a win
+        return x; 
+      }
+      // return the column
+    }                              //repeat
+    return -1;
+  }
+
+  /* checks for a column that would allow the opponent to win
+   * 
+   */
+
+  public int OpAttack() {
+    char c;
+    int x = -1;
+    while (x < 6) {
+      Connect4Game copy = new Connect4Game(myGame); //make a copy
+      x++;
+      if (getLowestEmptyIndex(copy.getColumn(x))!= -1) {
+
+        this.moveOnOppColumn(x, copy);  // place on that column
+        if (getLowestEmptyIndex(copy.getColumn(x))!= -1)
+          this.moveOnColumn(x, copy); 
+
+      }
+
+      if (iAmRed) 
+        c = 'R';
+      else 
+        c = 'Y';
+
+      if (copy.gameWon() == c) {
+
+        //check for a loss
+        return x; 
+      }
+      // return the column
+    }                              
+    return -2;
+
+  }
+  public void initialChecks() {
+    if (this.OpAttack() != -2 && this.iCanWin() != this.OpAttack() && this.theyCanWin() != this.OpAttack()) {
+      System.out.println("OP!");
+      j = this.randomMove();
+      if (this.checkForColumn() != -1) { // if there is only one column left
+        j = this.checkForColumn();
+        System.out.println("j" +j);
+      }
+      else {
+        System.out.println("Enter Else2 Clause");
+        while (j == this.OpAttack()) {
+          j = this.randomMove();
+        }
+        System.out.println("Exit Else2 Clause");
+
+      }
+    }
+  }
+
+  /* If there is one column left, return that column
+   * else return -1
+   */
+
+
+  public int checkForColumn() {
+    int a = 0;
+    int b = 0;
+    System.out.println("Enter checkForColumn");
+    for (int j = 0; j < 7; j++) {
+      if (this.getLowestEmptyIndex(myGame.getColumn(j)) != -1) {
+        b++;
+        a = j;
+      }
+    }
+    System.out.println("Exit checkForColumn");
+    if (b == 1) {
+      System.out.println("Enter the IF");
+      return a;
+    } else {
+      return -1;
+    }
+
+
+
+  }
 }
+
